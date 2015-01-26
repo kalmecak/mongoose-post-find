@@ -35,6 +35,13 @@ createFindOne = (hooks) ->
     result.exec = createExec hooks
     result
 
+createFindById = (hooks) ->
+  modifiedFindOne = ->
+    args = hooks.apply null, arguments
+    result = Model.findById.apply @, args
+    result.exec = createExec hooks
+    result
+
 createExec = (hooks) ->
   modifiedExec = ->
     args = hooks.apply null, arguments
@@ -44,10 +51,10 @@ module.exports = (schema, options) ->
   if not options then return console.log "No options passed for postFind"
   keys = Object.keys options
 
-  validOptions = keys.every (key) -> key is 'find' or key is 'findOne'
+  validOptions = keys.every (key) -> key is 'find' or key is 'findOne' or key is 'findById'
 
   if not validOptions then return console.log """
-    Missing valid postFind options. (find, findOne)
+    Missing valid postFind options. (find, findOne, findById)
   """
 
   keys.forEach (key) ->
@@ -58,3 +65,4 @@ module.exports = (schema, options) ->
     switch key
       when 'find' then schema.statics.find = createFind hooks
       when 'findOne' then schema.statics.findOne = createFindOne hooks
+      when 'findById' then schema.statics.findById = createFindById hooks
